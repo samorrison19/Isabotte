@@ -1,0 +1,33 @@
+from discord.ext import commands
+import acdb_module as db
+import time
+
+
+class Bugs(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command(name='currentbugs',
+                      help='Get list of bugs currently available.')
+    async def current_bugs(self, ctx):
+        now = time.localtime()
+        comment = db.mobile_comment_bug(db.bugs_in_hour(now.tm_mon,
+                                                        now.tm_hour))
+        if len(comment) > 2000:
+            comment = comment[:1990] + '...'
+        await ctx.send(f'```{comment}```')
+
+    @commands.command(name='bug',
+                      help='Get bug/bugs with name. "!bug tarantula"')
+    async def get_bug(self, ctx, bug):
+        comment = db.long_mobile_comment_bug(db.bug_with_precise_name(bug))
+        if len(comment) == 0:
+            comment = db.long_mobile_comment_bug(db.bugs_with_name(bug))
+        if len(comment) > 2000:
+            comment = comment[:1990] + '...'
+        if len(comment) != 0:
+            await ctx.send(f'```{comment}```')
+
+
+def setup(bot):
+    bot.add_cog(Bugs(bot))
