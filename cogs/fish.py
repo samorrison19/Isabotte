@@ -28,6 +28,18 @@ class Fish(commands.Cog):
             comment = comment[:1990] + '...'
         await ctx.send(f'```{comment}```')
 
+    @commands.command(name='fishleaving',
+                    help='Get all fish leaving after this month.')
+    async def bug_last_chance(self, ctx):
+        now = time.localtime()
+        comment = db.long_mobile_comment_fish(db.get_last_chance('fish', 
+                                                                    now.tm_mon))
+        if len(comment) > 2000:
+            comment = comment[:1990] + '...'
+        if len(comment) == 0:
+            comment = 'No fish leaving after this month.'
+        await ctx.send(f'```{comment}```')
+
 
 def setup(bot):
     bot.add_cog(Fish(bot))

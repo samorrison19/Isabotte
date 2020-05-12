@@ -28,6 +28,18 @@ class Bugs(commands.Cog):
         if len(comment) != 0:
             await ctx.send(f'```{comment}```')
 
+    @commands.command(name='bugsleaving',
+                      help='Get all bugs leaving after this month.')
+    async def bug_last_chance(self, ctx):
+        now = time.localtime()
+        comment = db.long_mobile_comment_bug(db.get_last_chance('bugs', 
+                                                                    now.tm_mon))
+        if len(comment) > 2000:
+            comment = comment[:1990] + '...'
+        if len(comment) == 0:
+            comment = 'No bugs leaving after this month.'
+        await ctx.send(f'```{comment}```')
+
 
 def setup(bot):
     bot.add_cog(Bugs(bot))
