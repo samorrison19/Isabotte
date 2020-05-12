@@ -192,11 +192,12 @@ def id_to_string(idlist):
     return string
 
 
-def get_with_ids(table, idstring):
+def get_with_ids(table, idstring, sortby='price', order='DESC'):
     # Return all items in given table with id in idstring
     # idstring will have to be sent to id_to_string() first - can't be list
     c.execute("""SELECT * FROM {}
-                WHERE id IN {}""".format(table, idstring))
+                WHERE id IN {}
+                ORDER BY {} {};""".format(table, idstring, sortby, order))
     return c.fetchall()
 
 
@@ -333,15 +334,16 @@ def get_at_location(table, location, sortby='price', order='DESC'):
 
 
 def get_last_chance(table, month, sortby='price', order='DESC'):
+    # Returns all items in given table that are available the given month
+    # but not the month following.
     if month==12:
         nextmonth = 1
     else:
         nextmonth = month+1
     current = get_month_ids(table, month, string=False)
     next = get_month_ids(table, nextmonth, string=False)
-    # return list(set(current) - (set(next)))
-    pass
-# *** NOT FINISHED ***
+    difference = list(set(current) - (set(next)))
+    return get_with_ids(table, id_to_string(difference), sortby, order)
 
 
 # BUG METHODS
