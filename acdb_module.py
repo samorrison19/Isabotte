@@ -1,10 +1,8 @@
-# Interface with anch.db - currently bug table only
+# Interface with anch.db - currently bug and fish table
 # Ideas for future:
 # ~ Create tags to identify butterflies/beetles etc with names that don't
 #   include their type?
-# ~ Add fish table - far future
-# ~ Print method with formatting
-# ~ Method to recombine bugs with two month blocks?
+# ~ Method to recombine bugs with two month blocks? <- Wonder wtf that means
 import sqlite3
 import calendar as cal
 
@@ -194,6 +192,14 @@ def id_to_string(idlist):
     return string
 
 
+def get_with_ids(table, idstring):
+    # Return all items in given table with id in idstring
+    # idstring will have to be sent to id_to_string() first - can't be list
+    c.execute("""SELECT * FROM {}
+                WHERE id IN {}""".format(table, idstring))
+    return c.fetchall()
+
+
 # GENERIC GETS
 def get_all(table, sortby='price', order='DESC'):
     # Return all in given table - default sort by price descending
@@ -202,10 +208,11 @@ def get_all(table, sortby='price', order='DESC'):
     return c.fetchall()
 
 
-def get_month_ids(table, month):
+def get_month_ids(table, month, string=True):
     # Given a table (STRING), month int, return a string of all ids of items
     # available in that month.
     # This string can be passed into SQL queries to sort results.
+    # set string=False to get a list of tuples of ids instead
 
     # Get beginning to December if month wraps
     c.execute("""SELECT id FROM {}
@@ -234,8 +241,10 @@ def get_month_ids(table, month):
                 OR month_end == {};
                 """.format(table, month, month))
     ids = ids + c.fetchall()
-
-    return id_to_string(ids)
+    if string:
+        return id_to_string(ids)
+    else:
+        return ids
 
 
 def get_hour_ids(table, month, hour):
@@ -268,51 +277,79 @@ def get_hour_ids(table, month, hour):
     return id_to_string(ids)
 
 
-# BUG METHODS
-# def bug_month_ids(month):
-#     # Given a month int, return a string of all ids of bugs available in that
-#     # month. This string can be passed into SQL queries to sort results.
-#
-#     # Get beginning to December if month wraps
-#     c.execute("""SELECT id FROM bugs
-#                 WHERE month_beg > month_end
-#                 AND {} BETWEEN month_beg AND 12;
-#                 """.format(month))
-#     ids = c.fetchall()
-#
-#     # Get January to end if month wraps
-#     c.execute("""SELECT id FROM bugs
-#                 WHERE month_beg > month_end
-#                 AND {} BETWEEN 0 AND month_end;
-#                 """.format(month))
-#     ids = ids + c.fetchall()
-#
-#     # Get beg to end if no month wrapping
-#     c.execute("""SELECT id FROM bugs
-#                 WHERE month_beg < month_end
-#                 AND {} BETWEEN month_beg AND month_end;
-#                 """.format(month))
-#     ids = ids + c.fetchall()
-#
-#     # Get current month (Firefly special case)
-#     c.execute("""SELECT id FROM bugs
-#                 WHERE month_beg == {}
-#                 OR month_end == {};
-#                 """.format(month, month))
-#     ids = ids + c.fetchall()
-#
-#     return id_to_string(ids)
+def get_in_month(table, month, sortby='price', order='DESC'):
+    # Return a list of tuples of all items in a given table and month (int)
+    # sorted by column passed in. Order can be 'ASC' or 'DESC'
+    id_string = get_month_ids(table, month)
+    c.execute("""SELECT * FROM {}
+                WHERE id IN {}
+                ORDER BY {} {};
+                """.format(table, id_string, sortby, order))
+    return c.fetchall()
 
+
+def get_in_hour(table, month, hour, sortby='price', order='DESC'):
+    # Return a list of tuples of all items in a given table, month int, 
+    # and hour int, sorted by column passed in - default is by price descending.
+    # Order can be 'ASC' or 'DESC'
+    id_string = get_hour_ids(table, month, hour)
+    c.execute("""SELECT * FROM {}
+                 WHERE id IN {}
+                 ORDER BY {} {};
+                 """.format(table, id_string, sortby, order))
+    return c.fetchall()
+
+
+def get_with_precise_name(table, name, sortby='price', order='DESC'):
+    # Return all items with name exactly matching name given in given table.
+    camel_name = name.title()
+    c.execute("""SELECT * FROM {}
+                WHERE name = '{}'
+                ORDER BY {} {};""".format(table, camel_name, sortby, order))
+    return c.fetchall()
+
+
+def get_with_name(table, name, sortby='price', order='DESC'):
+    # Return all items with a given string in the name in given table,
+    # i.e. "butter" selects all bugs with "butterfly" in their name
+    # default sort by price descending
+    # Sort can be name of any column, order can be 'DESC' or 'ASC'
+    c.execute("""SELECT * FROM {}
+                WHERE name LIKE '%{}%'
+                ORDER BY {} {};""".format(table, name, sortby, order))
+    return c.fetchall()
+
+
+def get_at_location(table, location, sortby='price', order='DESC'):
+    # Return all items at given location in given table,
+    # looks for string in location column,
+    # i.e. "sea" also selects "sea (rainy days)"
+    # default sort by price descending
+    # Sort can be name of any column, order can be 'DESC' or 'ASC'
+    c.execute("""SELECT * FROM {}
+                WHERE location LIKE '%{}%'
+                ORDER BY {} {};""".format(table, location, sortby, order))
+    return c.fetchall()
+
+
+def get_last_chance(table, month, sortby='price', order='DESC'):
+    if month==12:
+        nextmonth = 1
+    else:
+        nextmonth = month+1
+    current = get_month_ids(table, month, string=False)
+    next = get_month_ids(table, nextmonth, string=False)
+    # return list(set(current) - (set(next)))
+    pass
+# *** NOT FINISHED ***
+
+
+# BUG METHODS
 
 def bugs_in_month(month, sortby='price', order='DESC'):
     # Return a list of tuples of all bugs in a given month int sorted by column
     # passed in - default is by price descending. Order can be 'ASC' or 'DESC'
-    id_string = get_month_ids('bugs', month)
-    c.execute("""SELECT * FROM bugs
-                 WHERE id IN {}
-                 ORDER BY {} {};
-                 """.format(id_string, sortby, order))
-    return c.fetchall()
+    return get_in_month('bugs', month, sortby, order)
 
 
 def bug_hour_ids(month, hour):
@@ -326,12 +363,7 @@ def bugs_in_hour(month, hour, sortby='price', order='DESC'):
     # Return a list of tuples of all bugs in a given month int and hour int
     # sorted by column passed in - default is by price descending.
     # Order can be 'ASC' or 'DESC'
-    id_string = get_hour_ids('bugs', month, hour)
-    c.execute("""SELECT * FROM bugs
-                 WHERE id IN {}
-                 ORDER BY {} {};
-                 """.format(id_string, sortby, order))
-    return c.fetchall()
+    return get_in_hour('bugs', month, hour, sortby, order)
 
 
 def all_bugs(sortby='price', order='DESC'):
@@ -346,19 +378,12 @@ def bugs_at_location(location, sortby='price', order='DESC'):
     # i.e. "flying" also selects "Flying by purple flowers"
     # default sort by price descending
     # Sort can be name of any column, order can be 'DESC' or 'ASC'
-    c.execute("""SELECT * FROM bugs
-                WHERE location LIKE '%{}%'
-                ORDER BY {} {};""".format(location, sortby, order))
-    return c.fetchall()
+    return get_at_location('bugs', location, sortby, order)
 
 
 def bug_with_precise_name(name, sortby='price', order='DESC'):
     # Return all bugs with name exactly matching name given.
-    camel_name = name.title()
-    c.execute("""SELECT * FROM bugs
-                WHERE name = '{}'
-                ORDER BY {} {};""".format(camel_name, sortby, order))
-    return c.fetchall()
+    return get_with_precise_name('bugs', name, sortby, order)
 
 
 def bugs_with_name(name, sortby='price', order='DESC'):
@@ -366,10 +391,7 @@ def bugs_with_name(name, sortby='price', order='DESC'):
     # i.e. "butter" selects all bugs with "butterfly" in their name
     # default sort by price descending
     # Sort can be name of any column, order can be 'DESC' or 'ASC'
-    c.execute("""SELECT * FROM bugs
-                WHERE name LIKE '%{}%'
-                ORDER BY {} {};""".format(name, sortby, order))
-    return c.fetchall()
+    return get_with_name('bugs', name, sortby, order)
 
 
 # FISH METHODS
@@ -383,24 +405,14 @@ def all_fish(sortby='price', order='DESC'):
 def fish_in_month(month, sortby='price', order='DESC'):
     # Return a list of tuples of all fish in a given month int sorted by column
     # passed in - default is by price descending. Order can be 'ASC' or 'DESC'
-    id_string = get_month_ids('fish', month)
-    c.execute("""SELECT * FROM fish
-                 WHERE id IN {}
-                 ORDER BY {} {};
-                 """.format(id_string, sortby, order))
-    return c.fetchall()
+    return get_in_month('fish', month, sortby, order)
 
 
 def fish_in_hour(month, hour, sortby='price', order='DESC'):
     # Return a list of tuples of all fish in a given month int and hour int
     # sorted by column passed in - default is by price descending.
     # Order can be 'ASC' or 'DESC'
-    id_string = get_hour_ids('fish', month, hour)
-    c.execute("""SELECT * FROM fish
-                 WHERE id IN {}
-                 ORDER BY {} {};
-                 """.format(id_string, sortby, order))
-    return c.fetchall()
+    return get_in_hour('fish', month, hour, sortby, order)
 
 
 def fish_at_location(location, sortby='price', order='DESC'):
@@ -408,19 +420,12 @@ def fish_at_location(location, sortby='price', order='DESC'):
     # i.e. "sea" also selects "sea (rainy days)"
     # default sort by price descending
     # Sort can be name of any column, order can be 'DESC' or 'ASC'
-    c.execute("""SELECT * FROM fish
-                WHERE location LIKE '%{}%'
-                ORDER BY {} {};""".format(location, sortby, order))
-    return c.fetchall()
+    return get_at_location('fish', location, sortby, order)
 
 
 def fish_with_precise_name(name, sortby='price', order='DESC'):
     # Return all fish with name exactly matching name given.
-    camel_name = name.title()
-    c.execute("""SELECT * FROM fish
-                WHERE name = '{}'
-                ORDER BY {} {};""".format(camel_name, sortby, order))
-    return c.fetchall()
+    return get_with_precise_name('fish', name, sortby, order)
 
 
 def fish_with_name(name, sortby='price', order='DESC'):
@@ -428,10 +433,7 @@ def fish_with_name(name, sortby='price', order='DESC'):
     # i.e. "butter" selects all bugs with "butterfly" in their name
     # default sort by price descending
     # Sort can be name of any column, order can be 'DESC' or 'ASC'
-    c.execute("""SELECT * FROM fish
-                WHERE name LIKE '%{}%'
-                ORDER BY {} {};""".format(name, sortby, order))
-    return c.fetchall()
+    return get_with_name('fish', name, sortby, order)
 
 
 if __name__ == '__main__':
@@ -451,4 +453,6 @@ if __name__ == '__main__':
     # butt = bugs_with_name('beetle')
     # for bugs in butt:
     #     print(bugs)
-    display_bugs(bugs_in_hour(4, 20))
+    
+    # display_bugs(bugs_in_hour(4, 20))
+    pass
