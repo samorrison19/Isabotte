@@ -264,8 +264,9 @@ def get_hour_ids(table, month, hour):
     c.execute("""SELECT id FROM {}
                 WHERE id IN {}
                 AND hr_beg > hr_end
-                AND {} BETWEEN 0 AND hr_end;
-                """.format(table, month_ids, hour))
+                AND {} BETWEEN 0 AND hr_end
+                AND {} != hr_end;
+                """.format(table, month_ids, hour, hour))
     ids = ids + c.fetchall()
 
     c.execute("""SELECT id FROM {}
