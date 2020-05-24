@@ -6,7 +6,7 @@ class OwnerCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
+    
     @commands.command(name='repeat', aliases=['copy', 'mimic'], hidden=True)
     @commands.is_owner()
     async def do_repeat(self, ctx, *, our_input: str):
