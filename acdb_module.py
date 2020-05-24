@@ -1,8 +1,8 @@
 # Interface with anch.db - currently bug and fish table
+# 5-24-20 Adding villager functionality!
 # Ideas for future:
 # ~ Create tags to identify butterflies/beetles etc with names that don't
 #   include their type?
-# ~ Method to recombine bugs with two month blocks? <- Wonder wtf that means
 import sqlite3
 import calendar as cal
 
@@ -439,6 +439,49 @@ def fish_with_name(name, sortby='price', order='DESC'):
     # Sort can be name of any column, order can be 'DESC' or 'ASC'
     return get_with_name('fish', name, sortby, order)
 
+
+# VILLAGER METHODS!
+# create = """CREATE TABLE villagers (
+#     'key' CHAR(8),
+#     'image_url' CHAR(179),
+#     'caption' CHAR(77),
+#     'gender' CHAR(6),
+#     'personality' CHAR(37),
+#     'species' CHAR(46),
+#     'birthday' CHAR(49),
+#     'initial_phrase' CHAR(115),
+#     'initial_clothes' CHAR(129),
+#     'skill' CHAR(21),
+#     'goal' CHAR(18),
+#     'coffee' CHAR(67),
+#     'favorite_song' CHAR(53),
+#     'appearances' CHAR(59),
+#     'home_request' CHAR(29),
+#     'style' CHAR(13));"""
+
+def villager_by_name(name):
+    # Return Image URL, Name, Personality, Species, Birthday for villager
+    # with given name. Not case sensitive
+    # Returns False if villager not found.
+    c.execute("""SELECT * FROM villagers
+                WHERE key == "{}";""".format(name.title()))
+    villager = c.fetchall()
+    if len(villager) == 0:
+        return False
+    list = [villager[0][1], villager[0][0], villager[0][4], villager[0][5],
+            villager[0][6]]
+    return list
+
+def villager_comment(name):
+    # Returns a formatted comment with the information from
+    # villager_by_name() such that can be sent directly to discord.py
+    villager = villager_by_name(name)
+    if villager == False:
+        comment = "No villager found by that name."
+    else:
+        comment = f'{villager[0]}\n{villager[1]} - {villager[2]} {villager[3]}'\
+                  f'\nBirthday: {villager[4]}'
+    return comment
 
 if __name__ == '__main__':
     # def bugs_last_chance(month):
