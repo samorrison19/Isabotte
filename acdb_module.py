@@ -479,7 +479,7 @@ def villager_comment(name):
     if villager == False:
         comment = "No villager found by that name."
     else:
-        comment = f'{villager[0]}\n{villager[1]} - {villager[2]} {villager[3]}'\
+        comment = f'{villager[0]}\n**{villager[1]}** - {villager[2]} {villager[3]}'\
                   f'\nBirthday: {villager[4]}'
     return comment
 
