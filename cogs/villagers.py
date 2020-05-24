@@ -11,7 +11,7 @@ class Villagers(commands.Cog):
                       help='Get villager with name. "!villager raymond"')
     async def get_fish(self, ctx, villager):
         comment = db.villager_comment(villager)
-        await ctx.send(f'```{comment}```')
+        await ctx.send(comment)
 
 
 def setup(bot):

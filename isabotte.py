@@ -20,7 +20,8 @@ bot = commands.Bot(command_prefix='!', description=intro)
 cogs = ['cogs.owner',
         'cogs.misc',
         'cogs.bugs',
-        'cogs.fish']
+        'cogs.fish',
+        'cogs.villagers']
 
 
 if __name__ == '__main__':
