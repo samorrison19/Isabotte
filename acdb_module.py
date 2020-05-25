@@ -468,8 +468,9 @@ def villager_by_name(name):
     villager = c.fetchall()
     if len(villager) == 0:
         return False
-    list = [villager[0][1], villager[0][0], villager[0][4], villager[0][5],
-            villager[0][6]]
+    list = [villager[0][1], villager[0][0], villager[0][16], villager[0][5],
+            villager[0][6], villager[0][17], villager[0][18], villager[0][19],
+            villager[0][20], villager[0][21]]
     return list
 
 def villager_comment(name):
@@ -480,7 +481,9 @@ def villager_comment(name):
         comment = "No villager found by that name."
     else:
         comment = f'{villager[0]}\n**{villager[1]}** - {villager[2]} {villager[3]}'\
-                  f'\nBirthday: {villager[4]}'
+                  f'\nBirthday: {villager[4]}\nHobby: {villager[5]}\n'\
+                  f'Styles: {villager[6]}, {villager[7]}\n'\
+                  f'Colors: {villager[8]}, {villager[9]}'
     return comment
 
 if __name__ == '__main__':
