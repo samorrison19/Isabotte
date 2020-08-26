@@ -35,7 +35,10 @@ class Bugs(commands.Cog):
         comment = db.long_mobile_comment_bug(db.get_last_chance('bugs', 
                                                                     now.tm_mon))
         if len(comment) > 2000:
-            comment = comment[:1990] + '...'
+            comment = db.mobile_comment_bug(db.get_last_chance('bugs', 
+                                                                    now.tm_mon))
+            if len(comment) > 2000:
+                comment = comment[:1990] + '...'
         if len(comment) == 0:
             comment = 'No bugs leaving after this month.'
         await ctx.send(f'```{comment}```')
