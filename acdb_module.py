@@ -25,40 +25,6 @@ def display_bugs(buglist):
         print()
 
 
-# def bugs_to_comment(buglist):
-#     columns = ('id', 'name', 'location', 'price', 'start month', 'end month',
-#                'start hour', 'end hour')
-#     comment = ('')
-#     for item in columns:
-#         comment = comment + str(item)[:12].center(15)
-#     comment = comment + '\n'
-#     for bug in buglist:
-#         for item in bug:
-#             comment = comment + str(item)[:12].center(15)
-#         comment = comment + '\n'
-#     return comment
-
-# def short_comment(buglist):
-#     # Displays only bugs, price, time, location
-#     comment = ''
-#     for bug in buglist:
-#         if bug[6] == 0:
-#             hours = '-- All day --'
-#         else:
-#             if bug[6] > 12:
-#                 beg_hr = f'{str(bug[6]-12)} PM'
-#             else:
-#                 beg_hr = f'{str(bug[6])} AM'
-#             if bug[7] > 12:
-#                 end_hr = f'{str(bug[7]-12)} PM'
-#             else:
-#                 end_hr = f'{str(bug[7])} AM'
-#             hours = f'{beg_hr} to {end_hr}'
-#         comment = f'{comment}\n{bug[1].rjust(26)}|{str(bug[3]).center(5)}'\
-#                   f'|{hours.center(14)}|{bug[2][:24].ljust(24)}'
-#     return comment
-
-
 def mobile_comment_bug(buglist):
     # Prints bug list to be formatted for 38 char wide mobile viewing
     # just name, price, time, location
@@ -345,6 +311,19 @@ def get_last_chance(table, month, sortby='price', order='DESC'):
     current = get_month_ids(table, month, string=False)
     next = get_month_ids(table, nextmonth, string=False)
     difference = list(set(current) - (set(next)))
+    return get_with_ids(table, id_to_string(difference), sortby, order)
+
+
+def get_new_arrivals(table, month, sortby='price', order='DESC'):
+    # Returns all items in given table that are available the given month
+    # but not the month prior
+    if month==1:
+        prevmonth = 12
+    else:
+        prevmonth = month-1
+    current = get_month_ids(table, month, string=False)
+    prev = get_month_ids(table, prevmonth, string=False)
+    difference = list(set(current) - set(prev))
     return get_with_ids(table, id_to_string(difference), sortby, order)
 
 

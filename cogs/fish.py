@@ -43,6 +43,21 @@ class Fish(commands.Cog):
             comment = 'No fish leaving after this month.'
         await ctx.send(f'```{comment}```')
 
+    @commands.command(name='fisharriving',
+                    help='Get all fish new this month.')
+    async def fish_new_arrivals(self, ctx):
+        now = time.localtime()
+        comment = db.long_mobile_comment_fish(db.get_new_arrivals('fish', 
+                                                                    now.tm_mon))
+        if len(comment) > 2000:
+            comment = db.mobile_comment_fish(db.get_new_arrivals('fish', 
+                                                                    now.tm_mon))
+            if len(comment) > 2000:
+                comment = comment[:1990] + '...'
+        if len(comment) == 0:
+            comment = 'No new fish this month.'
+        await ctx.send(f'```{comment}```')
+
 
 def setup(bot):
     bot.add_cog(Fish(bot))

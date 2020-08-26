@@ -43,6 +43,21 @@ class Bugs(commands.Cog):
             comment = 'No bugs leaving after this month.'
         await ctx.send(f'```{comment}```')
 
+    @commands.command(name='bugsarriving',
+                    help='Get all bugs new this month.')
+    async def bug_new_arrivals(self, ctx):
+        now = time.localtime()
+        comment = db.long_mobile_comment_bug(db.get_new_arrivals('bugs', 
+                                                                    now.tm_mon))
+        if len(comment) > 2000:
+            comment = db.mobile_comment_bug(db.get_new_arrivals('bugs', 
+                                                                    now.tm_mon))
+            if len(comment) > 2000:
+                comment = comment[:1990] + '...'
+        if len(comment) == 0:
+            comment = 'No new bugs this month.'
+        await ctx.send(f'```{comment}```')
+
 
 def setup(bot):
     bot.add_cog(Bugs(bot))

@@ -4,6 +4,7 @@ env/
 *.ipynb
 *.csv
 
+cogs/__pycache__
 __pycache__/
 *.pyc
 cogs/__pycache__/bugs.cpython-38.pyc
