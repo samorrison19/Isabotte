@@ -4,5 +4,9 @@ env/
 *.ipynb
 *.csv
 
-__pycache__
+__pycache__/
 *.pyc
+cogs/__pycache__/bugs.cpython-38.pyc
+cogs/__pycache__/fish.cpython-38.pyc
+cogs/__pycache__/misc.cpython-38.pyc
+cogs/__pycache__/owner.cpython-38.pyc
